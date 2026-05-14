@@ -28,4 +28,4 @@ resources:
 images:
   - name: online-shop
     newName: 784916389752.dkr.ecr.us-east-1.amazonaws.com/sbx-images
-    newTag: online-shop-bootstrap
+    newTag: online-shop-87ef9810

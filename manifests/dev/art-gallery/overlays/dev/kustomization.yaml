@@ -18,4 +18,4 @@ resources:
 images:
   - name: art-gallery
     newName: 784916389752.dkr.ecr.us-east-1.amazonaws.com/sbx-images
-    newTag: art-gallery-bootstrap
+    newTag: art-gallery-22a4cac9
