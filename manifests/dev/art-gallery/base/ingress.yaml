@@ -1,0 +1,33 @@
+# =============================================================================
+# ingress.yaml — path-prefix routing /art-gallery/ → art-gallery Service
+# =============================================================================
+# Same group.name (sbx-shared) as online-shop's Ingress so both apps land
+# on ONE shared internal ALB. Different path prefix routes traffic per-app.
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: art-gallery
+  namespace: art-gallery
+  labels:
+    app: art-gallery
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internal
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/group.name: sbx-shared
+    alb.ingress.kubernetes.io/healthcheck-path: /art-gallery/healthz
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+          - path: /art-gallery
+            pathType: Prefix
+            backend:
+              service:
+                name: art-gallery
+                port:
+                  number: 80

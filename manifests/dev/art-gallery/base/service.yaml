@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: art-gallery
+  namespace: art-gallery
+  labels:
+    app: art-gallery
+spec:
+  type: ClusterIP
+  selector:
+    app: art-gallery
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP

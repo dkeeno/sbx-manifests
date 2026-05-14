@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: art-gallery
+  labels:
+    app: art-gallery
+    managed-by: argocd
