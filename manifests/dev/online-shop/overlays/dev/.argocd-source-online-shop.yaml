@@ -1,3 +1,3 @@
 kustomize:
   images:
-  - online-shop=784916389752.dkr.ecr.us-east-1.amazonaws.com/sbx-images@sha256:236e9548df17b73a4d8de7ed8284f28d13bad7588186a18d9fdc385789cd8b79
+  - online-shop=784916389752.dkr.ecr.us-east-1.amazonaws.com/sbx-images@sha256:67406f8c86b934a37cf5a6923447672a70b603fa4b5cb343d9b839b3b5125d48
