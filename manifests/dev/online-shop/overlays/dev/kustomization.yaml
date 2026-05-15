@@ -28,4 +28,9 @@ resources:
 images:
   - name: online-shop
     newName: 784916389752.dkr.ecr.us-east-1.amazonaws.com/sbx-images
-    newTag: online-shop-0908cce5
+    # `<app>-latest` is mutable; CI re-points it on every push. Image
+    # Updater's digest strategy watches THIS tag and pins its digest in
+    # .argocd-source-online-shop.yaml. Each CI push → digest changes →
+    # IU bumps the pin → ArgoCD syncs → pods roll. Hands-off, immune to
+    # SHA-tag sort-order quirks.
+    newTag: online-shop-latest

@@ -67,14 +67,23 @@ spec:
         # ---- Image Updater wiring ----
         # Single ECR repo `sbx-images` (HARD RULE feedback_single_ecr_repo).
         # Per-app discrimination is in the tag prefix.
-        argocd-image-updater.argoproj.io/image-list: 'app=784916389752.dkr.ecr.us-east-1.amazonaws.com/sbx-images'
-        # Pick the most-recently-PUSHED tag (registry metadata, not lexical).
-        # Right for SHA tags — each CI push lands a new tag, IU takes the newest.
-        argocd-image-updater.argoproj.io/app.update-strategy: newest-build
-        # Allow-tags regex is templated PER APP so each Application's IU only
-        # picks tags starting with its own app name. Excludes 'latest' and
-        # 'bootstrap' tags by design.
-        argocd-image-updater.argoproj.io/app.allow-tags: 'regexp:^{{path.basename}}-[a-f0-9]{8}$'
+        #
+        # DIGEST STRATEGY (chosen 2026-05-14):
+        # IU watches a SPECIFIC tag (`<app>-latest`) and pins its DIGEST in
+        # the manifest. When CI re-tags `<app>-latest` to a new image, the
+        # digest changes; IU updates the pinned digest. Result:
+        # - Immune to lex-sort vs push-time-sort issues (no SHA-tag sort)
+        # - Manifest pins to the exact image deployed (digest is verifiable)
+        # - Works for any tag naming convention
+        #
+        # Tradeoff: manifest references `<app>-latest@sha256:...` instead of
+        # the bare SHA tag. To trace the deployed digest back to a source SHA,
+        # query ECR: `aws ecr describe-images --image-ids imageDigest=sha256:...`
+        # — the SHA tag is still pushed by CI alongside `<app>-latest`.
+        argocd-image-updater.argoproj.io/image-list: 'app=784916389752.dkr.ecr.us-east-1.amazonaws.com/sbx-images:{{path.basename}}-latest'
+        argocd-image-updater.argoproj.io/app.update-strategy: digest
+        # allow-tags is unused with digest strategy — IU watches the explicit
+        # tag from image-list, not a regex-filtered set.
         # Kustomize bridge: tells IU which `images:` entry in the overlay's
         # kustomization.yaml to target. Matches the `name:` field there,
         # which is the bare app name.

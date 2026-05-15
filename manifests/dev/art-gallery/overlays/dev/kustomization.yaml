@@ -18,4 +18,9 @@ resources:
 images:
   - name: art-gallery
     newName: 784916389752.dkr.ecr.us-east-1.amazonaws.com/sbx-images
-    newTag: art-gallery-22a4cac9
+    # `<app>-latest` is mutable; CI re-points it on every push. Image
+    # Updater's digest strategy watches THIS tag and pins its digest in
+    # .argocd-source-art-gallery.yaml. Each CI push → digest changes →
+    # IU bumps the pin → ArgoCD syncs → pods roll. Hands-off, immune to
+    # SHA-tag sort-order quirks.
+    newTag: art-gallery-latest
