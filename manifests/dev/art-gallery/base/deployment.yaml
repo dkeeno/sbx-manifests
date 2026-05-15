@@ -1,9 +1,30 @@
 # =============================================================================
 # deployment.yaml — art-gallery app workload (Kustomize base)
 # =============================================================================
-# Same shape as online-shop/base/deployment.yaml. Only differences:
-#   - app name: art-gallery
-#   - probe path: /art-gallery/healthz
+#
+# Image reference is intentionally a PLACEHOLDER: just the bare name
+# `art-gallery`. Kustomize's `images:` field in each overlay rewrites this
+# to the real ECR path + the per-commit tag (or digest, with IU's digest
+# strategy).
+#
+# Bump flow (per art-gallery CI commit on main):
+#   1. art-gallery CI builds + pushes to ECR sbx-images repo with two tags:
+#      art-gallery-<SHORT_SHA> + art-gallery-latest
+#   2. Image Updater runs on a 2-min interval, sees a new digest behind the
+#      `art-gallery-latest` tag, pins it in overlays/dev/.argocd-source-
+#      art-gallery.yaml, and pushes the commit straight to sbx-manifests main.
+#   3. ArgoCD's git poll (~30s) picks the commit up and rolls these pods.
+#
+# Probe path: /art-gallery/healthz — the Go app serves all routes under
+# the /art-gallery/ prefix to match the Ingress path. No URL rewrite —
+# the app is just aware of its prefix.
+#
+# Resource requests deliberately tiny. EKS Auto Mode's Karpenter will
+# provision instances large enough to honour them; smaller requests =
+# better bin-packing across the shared node pool.
+#
+# Mirrors online-shop/base/deployment.yaml; differences are app name and
+# probe path. See that file's header for the full pattern explanation.
 
 apiVersion: apps/v1
 kind: Deployment
@@ -52,7 +73,12 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
             runAsNonRoot: true
-            # Distroless 'nonroot' UID/GID = 65532. HARD RULE from GCP.
+            # Distroless 'nonroot' user is UID/GID 65532. Without the
+            # numeric UID here, the kubelet rejects the pod with
+            # "container has runAsNonRoot and image has non-numeric user
+            # (nonroot), cannot verify user is non-root" — k8s won't
+            # resolve the username at admission time. (HARD RULE from GCP:
+            # memory `distroless_needs_numeric_uid`.)
             runAsUser: 65532
             runAsGroup: 65532
             readOnlyRootFilesystem: true
